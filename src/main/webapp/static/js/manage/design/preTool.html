@@ -1,0 +1,352 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" src="/vdata/static/lib/jquery/jquery.js"></script>
+<script type="text/javascript" src="/vdata/static/lib/Charts/echarts.js"></script>
+<script type="text/javascript" src="./map.js"></script>
+<title>图表预览</title>
+<style>
+*{
+	font-size:12px; 
+	color:#000;
+}
+@font-face{
+	font-family: 'fontnum';
+	src: url('../../../themes/default/font/DS-DIGIB.TTF')
+}
+@font-face{
+	font-family: 'fonttext';
+	src: url('../../../themes/default/font/HYQiHei-105J.ttf')
+}
+body{
+	margin:0;
+	padding:0;
+}
+h2{
+	 width:100%;
+	 height:25px;
+	 line-height:25px;
+	 font-size:14px;
+	 background:#EAF2FF;
+	 color:#000000;
+	 text-indent:15px;
+	 cursor:move;
+	 overflow:hidden;
+	 margin-top:0px;	 
+	 text-align: center;
+	 
+}
+.main{
+	float: left;
+	border:1px solid #95B8E7;
+	display:inline-block;
+	*display:inline;
+	*zoom:1;
+}
+.compent{
+	position:relative;
+	height: 850px;
+	overflow: aoto;
+	padding:10px;
+	box-sizing: border-box;
+	}
+}
+.main_class{
+      width: 325px;
+   	  height: 300px;
+      padding: 10px;
+      float: left;
+      background-color: rgba(25,71,167,0);   
+      border-radius: 10px;
+	}
+.com_style{
+	 position:absolute;
+	 width: 340px;
+	 height: 320px;
+	 background-size: 100% 100%;
+     background-image: url('../../../themes/default/images/client/border80.png');
+     padding:5px;
+}
+.com_style>div{
+	height:300px;
+	width:325px;
+}
+.Population{
+	width:100%;
+	height:100%;
+}
+.title{
+	width: 100%;
+	margin: 5px 0 0 3px;
+	height: 10%;
+}
+.peoples{
+	height: 80%;
+}
+.peopleText{
+	color:#fff;
+	font-family: 'fonttext';
+	font-size: 19px;
+	letter-spacing:-1px;
+}
+.low-people{
+
+	background:url('../../../../static/themes/default/images/client/low.gif') no-repeat center;
+}
+.height-people{
+
+	background:url('../../../../static/themes/default/images/client/height.gif') no-repeat center;
+}
+.height-people,.low-people{
+	width: 100%;
+	height:90%;
+	background-size: 80%
+}
+.num{
+	text-align:center;
+	width:100%;
+	height:10%;
+}
+.people{
+	float:left;
+	width:50%;
+	height:100%;
+}
+.people span{
+	font-size:20px;
+	color:#fff;
+	font-family: 'fontnum';
+}
+</style>
+</head>
+<body>
+		<div id="container" class="compent" style="position:relative"></div>
+</body>
+<script>
+var insertPopulation = function(eChartdiv){
+		var divPop = document.createElement('div');
+		//获取body对象
+		//var bo = document.body;
+        //动态插入到body中
+        //bo.insertBefore(div,bo.lastChild);
+        eChartdiv.append(divPop);
+		divPop.id ="main";
+		divPop.className = "Population"
+		var divObj = document.getElementById(divPop.id);
+		var myHtml="";
+		myHtml += '<div class="title"><span class="peopleText">VIP/普通客户数量</span></div>'+
+				  '<div class="peoples">'+
+					'<div class="people">'+
+					'<div class="height-people">'+
+					'</div>'+      
+					'<div class="num"><span id="heightNo'+eChartdiv.id+'" >XXX</span><span id="heightPercent'+eChartdiv.id+'" ></span></div>'+
+				  '</div>'+
+				  '<div class="people">'+
+					'<div class="low-people">'+
+					'</div>'+
+					'<div class="num"><span id="lowNo'+eChartdiv.id+'" >XXX</span><span id="lowPercent'+eChartdiv.id+'" ></span></div>'+
+				  '</div>'+
+				  '</div>';	  
+		$(divPop).html(myHtml);		
+}
+$(function(){
+	var myChart;
+	var myOption;
+	var myId;
+	var comObj;
+	var comType;
+	var eChartdiv;
+	var eChartObj;
+	var iHeight;
+	var iWidth;
+	if(window.opener && !window.opener.closed){
+			var myDiv = window.opener.document.getElementById("container");
+			var bkImage = $(myDiv).css("background-image");
+			$("#container").css({"width":$(myDiv).css("width"),"height":$(myDiv).css("height"),"background-color":$(myDiv).css("background-color"),"background-image":bkImage,"background-repeat":"no-repeat","background-size":"100% 100%"});
+			$($(myDiv).html()).find(".main_class").each(function(i){
+				comType = $(this).parent().attr("type");
+				comObj = $("<div class='com_style'></div>");
+				newLeft = (parseInt($(this).parent().css("left").substring(0,$(this).parent().css("left").length-2)) - 0)+ "px";
+				comObj.css({position: $(this).parent().css("position"),top: $(this).parent().css("top"),left: newLeft,height: $($(this).html()).find("canvas").css("height"),width:$($(this).html()).find("canvas").css("width")});
+				myId = $(this).attr("id");
+				if($(this).parent().find("#"+myId).css("background-color")!="rgba(0, 0, 0, 0)"&&$(this).parent().find("#"+myId).css("background-color")){
+					comObj.css('backgroundColor',$(this).parent().find("#"+myId).css("background-color"));
+				}
+				$("#container").append(comObj);
+				eChartdiv = document.createElement('div');
+			    eChartdiv.style.position = "absolute";
+			    eChartdiv.id = myId;
+			    //判断是否为population组件
+			    if(comType=="population"){
+			    	comObj.css({height: $(this).css("height"),width:$(this).css("width")})
+					eChartdiv.style.width = $(this).css("width");
+    			    eChartdiv.style.height = $(this).css("height");
+				    insertPopulation(eChartdiv);
+				    comObj.append(eChartdiv);
+ 				    if(window.opener.document.getElementById("heightNo"+myId)!=null){ 
+ 				    	console.log(myId,window.opener.document.getElementById("heightNo"+myId))
+				    	var hNo = window.opener.document.getElementById("heightNo"+myId).innerHTML;
+					    var lNo = window.opener.document.getElementById("lowNo"+myId).innerHTML;
+					    $("#"+myId).find("#heightNo"+myId).html(hNo);
+					    $("#"+myId).find("#lowNo"+myId).html(lNo);
+					    hNo=parseFloat(hNo);
+					    lNo=parseFloat(lNo);
+					    var heightPercent=(hNo*100/(hNo+lNo)).toFixed(1);
+	                    var lowPercent=(lNo*100/(hNo+lNo)).toFixed(1);
+		        		$("#"+myId).find("#heightPercent"+myId).html('('+heightPercent+'%'+')');
+					    $("#"+myId).find("#lowPercent"+myId).html('('+lowPercent+'%'+')');
+				    }
+			    }else if(comType=="map"){
+			    	//判断是否为map组件
+			        eChartdiv.style.height =$($(this).html()).find("canvas").css("height");
+			        eChartdiv.style.width = $($(this).html()).find("canvas").css("width");
+			        comObj.append(eChartdiv);
+			        myChart = window.opener.echarts.getInstanceByDom(window.opener.document.getElementById(myId));
+				    myOption = myChart.getOption();
+				    eChartObj = document.getElementById(eChartdiv.id);	
+				    InitMap(eChartObj,'main_class');	
+				    preChart = echarts.init(eChartObj);
+				    preChart.setOption(myOption);	
+			    }else if(comType=="date"||comType=="time"){
+			    	comObj.css({height: $(this).css("height"),width:$(this).css("width")});
+					eChartdiv.style.width = $(this).css("width");
+    			    eChartdiv.style.height = $(this).css("height");
+    			    comObj.append(eChartdiv);
+    			    $(eChartdiv).parent().css({"background-image":"none"})
+    			    eChartObj = document.getElementById(eChartdiv.id);	
+    			    if(comType=="date"){
+    			    	InitDate(eChartObj,eChartdiv.id);	
+    			    }
+    			    else{
+    			    	InitTime(eChartObj,eChartdiv.id);	
+    			    }
+    			    
+			    }else if(comType=="flow"){
+			    	comObj.css({height: $(this).css("height"),width:$(this).css("width")});
+					eChartdiv.style.width = $(this).css("width");
+    			    eChartdiv.style.height = $(this).css("height");
+    			    comObj.append(eChartdiv);
+    			    eChartObj = document.getElementById(eChartdiv.id);	
+    			    InitFlow(eChartObj,eChartdiv.id);	
+    			    
+			    }
+			    else{
+			    	//其他echarts组件
+			    	eChartdiv.style.height =$($(this).html()).find("canvas").css("height");
+				    eChartdiv.style.width = $($(this).html()).find("canvas").css("width");
+				    comObj.append(eChartdiv);
+				    myChart = window.opener.echarts.getInstanceByDom(window.opener.document.getElementById(myId));
+				    myOption = myChart.getOption();
+				    eChartObj = document.getElementById(eChartdiv.id);	
+				    preChart = echarts.init(eChartObj);
+				    preChart.setOption(myOption);	
+			    }
+			
+				
+			});
+		};
+
+		function InitTime(divObj,divId){
+			var myHtml = "";
+			divObj.className = 'main_class';
+			myHtml += '<div class="main_time">'+
+									'<span id="now_time" class="now_time"  style="font-size: 40px;color: #FFF;font-family:fontnum"></span>'+
+								'</div>';
+			$(divObj).html("");		  
+			$(divObj).html(myHtml);	
+			setDate();
+			setInterval(function(){
+					var timeDiv = document.getElementById('now_time');
+					var date = new Date();
+					var year=date.getFullYear();//年
+					var month=date.getMonth();//当前月份
+					var data=date.getDate();//天
+					var hours=date.getHours();//小时
+					var minute=date.getMinutes();//分
+					var second=date.getSeconds();//秒
+					var time=fnW(hours)+":"+fnW(minute)+":"+fnW(second);
+					var date=year+"-"+fnW((month+1))+"-"+fnW(data);
+					timeDiv.innerHTML=time;
+			},1000);
+			function setDate(){
+						var timeDiv = document.getElementById('now_time');
+						var date = new Date();
+						var year=date.getFullYear();//年
+						var month=date.getMonth();//当前月份
+						var data=date.getDate();//天
+						var hours=date.getHours();//小时
+						var minute=date.getMinutes();//分
+						var second=date.getSeconds();//秒
+						var time=fnW(hours)+":"+fnW(minute)+":"+fnW(second);
+						var date=year+"-"+fnW((month+1))+"-"+fnW(data)
+						timeDiv.innerHTML=time;
+			};
+			function fnW(str){
+				var num;
+				str>=10?num=str:num="0"+str;
+				return num;
+			};
+		}
+
+
+		function InitFlow(divObj,divId){
+			var myHtml = "";
+			divObj.className = 'main_class';
+			myHtml += 
+
+					  '<div class="title" style="text-align:center"><span class="peopleText" style="font-size:30px">今日人流量</span></div>'+
+						'<div class="num" style="text-align: center;"><span id="today_flow" style="font-size: 120px;color: #FFF;font-family:fontnum;line-height: 250px;" >0</span></div>';
+
+			$(divObj).html("");		  
+			$(divObj).html(myHtml);	
+			updateFlow('120')
+			
+		}
+		function updateFlow(data){
+			$("#today_flow").html(data)
+		}
+		function InitDate(divObj,divId){
+			var myHtml = "";
+			divObj.className = 'main_class';
+			myHtml += '<div class="main_date"'+
+											'<span id="now_date" class="now_date" style="font-size: 26px;color: #FFF;font-family:fontnum">></span>'+
+									'</div>'
+			$(divObj).html("");		  
+			$(divObj).html(myHtml);	
+			setDate();
+			setInterval(function(){
+				var dateDiv =document.getElementById('now_date');
+						var date = new Date();
+						var year=date.getFullYear();//年
+						var month=date.getMonth();//当前月份
+						var data=date.getDate();//天
+						var hours=date.getHours();//小时
+						var minute=date.getMinutes();//分
+						var second=date.getSeconds();//秒
+						var time=fnW(hours)+":"+fnW(minute)+":"+fnW(second);
+						var date=year+"-"+fnW((month+1))+"-"+fnW(data)
+						dateDiv.innerHTML=date;
+			},1000);
+			function setDate(){
+						var dateDiv =document.getElementById('now_date');
+						var date = new Date();
+						var year=date.getFullYear();//年
+						var month=date.getMonth();//当前月份
+						var data=date.getDate();//天
+						var hours=date.getHours();//小时
+						var minute=date.getMinutes();//分
+						var second=date.getSeconds();//秒
+						var time=fnW(hours)+":"+fnW(minute)+":"+fnW(second);
+						var date=year+"-"+fnW((month+1))+"-"+fnW(data)
+						dateDiv.innerHTML=date;
+			};
+			function fnW(str){
+				var num;
+				str>=10?num=str:num="0"+str;
+				return num;
+			};
+		}
+})
+</script>
+</html>
