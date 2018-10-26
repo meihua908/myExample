@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aoto.vdata.manager.persistence.inf.ParamMapper">
+
+  <resultMap id="resultMap" type="map" >
+    <id column="PARAM_ID" property="paramId" javaType="int" jdbcType="NUMERIC" />
+    <result column="PARAM_NAME" property="paramName" javaType="String" jdbcType="VARCHAR" />
+    <result column="PARAM_MARK" property="paramMark" javaType="String" jdbcType="VARCHAR" />
+    <result column="PARAM_TYPE" property="paramType" javaType="int" jdbcType="NUMERIC" />
+    <result column="PARAM_DEFAULT" property="paramDefault" javaType="String" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" javaType="String" jdbcType="VARCHAR" />
+    <result column="CREATED_BY" property="createdBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="CREATED_DATE" property="createdDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATED_BY" property="lastUpdatedBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="LAST_UPDATED_DATE" property="lastUpdatedDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="DELETED" property="deleted" javaType="int" jdbcType="NUMERIC" />
+  </resultMap>
+
+	<select id="selectParamByInterfaceId" parameterType="int" resultMap="resultMap">
+		SELECT a.PARAM_ID, a.PARAM_MARK,a.PARAM_TYPE, a.PARAM_NAME, DECODE(A.PARAM_TYPE, 0, '输入', 1, '选择', 2,'日期') PARAM_DEFAULT
+		FROM PARAM_INFO a
+ 		INNER JOIN INTERFACE_PARAM b
+    	ON a.PARAM_ID = b.PARAM_ID
+ 		WHERE b.INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC} order by a.param_id asc
+	</select>
+
+	<insert id="insertParam" parameterType="map" useGeneratedKeys="true" keyProperty="pk_paramItemId">
+		INSERT INTO PARAM_INFO
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+				PARAM_ID,
+			<if test="null != paramName and '' != paramName">
+				PARAM_NAME,
+			</if>
+			<if test="null != paramMark and '' != paramMark">
+				PARAM_MARK,
+			</if>
+			<if test="null != paramType">
+				PARAM_TYPE,
+			</if>
+			<if test="null != paramDefault and 0 != paramDefault">
+				PARAM_DEFAULT,
+			</if>
+			<if test="null != remark and '' != remark">
+				REMARK,
+			</if>
+				CREATED_BY,
+				CREATED_DATE,
+				LAST_UPDATED_BY,
+				LAST_UPDATED_DATE,
+				DELETED,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{paramId, jdbcType=NUMERIC},
+			<if test="null != paramName and '' != paramName">
+				#{paramName, jdbcType=VARCHAR},
+			</if>
+			<if test="null != paramMark and '' != paramMark">
+				#{paramMark, jdbcType=VARCHAR},
+			</if>
+			<if test="null != paramType">
+				#{paramType, jdbcType=VARCHAR},
+			</if>
+			<if test="null != paramDefault and 0 != paramDefault">
+				#{paramDefault, jdbcType=VARCHAR},
+			</if>
+			<if test="null != remark and '' != remark">
+				#{remark, jdbcType=VARCHAR},
+			</if>
+				TO_NUMBER(#{createdBy}),
+				TO_DATE(#{createdDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				TO_NUMBER(#{createdBy}),
+				TO_DATE(#{createdDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				0,
+		</trim>
+	</insert>
+	
+	<insert id="insertConnect" parameterType="map">
+		INSERT INTO INTERFACE_PARAM (INTERFACE_PARAM_ID, INTERFACE_ID, PARAM_ID) VALUES (#{interfaceParamId, jdbcType=NUMERIC}, #{interfaceId, jdbcType=NUMERIC}, #{paramId, jdbcType=NUMERIC})
+	</insert>
+
+	<delete id="deleteParamByInterface" >
+		DELETE PARAM_INFO a WHERE a.PARAM_ID IN (SELECT b.PARAM_ID FROM INTERFACE_PARAM b WHERE b.INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC})
+	</delete>
+
+	<delete id="deleteConnectByInterface" >
+		DELETE INTERFACE_PARAM WHERE INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC}
+	</delete>
+
+</mapper>

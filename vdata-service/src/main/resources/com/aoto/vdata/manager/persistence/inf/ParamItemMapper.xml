@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aoto.vdata.manager.persistence.inf.ParamItemMapper">
+
+  <resultMap id="resultMap" type="map" >
+    <id column="PARAM_ITEM_ID" property="paramItemId" javaType="int" jdbcType="NUMERIC" />
+    <result column="PARAM_ID" property="paramId" javaType="int" jdbcType="NUMERIC" />
+    <result column="PARAM_ITEM_NAME" property="paramItemName" javaType="String" jdbcType="VARCHAR" />
+    <result column="PARAM_ITEM_VALUE" property="paramItemValue" javaType="String" jdbcType="VARCHAR" />
+    <result column="PARAM_ITEM_ORDER" property="paramItemOrder" javaType="int" jdbcType="NUMERIC" />
+    <result column="CREATED_BY" property="createdBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="CREATED_DATE" property="createdDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATED_BY" property="lastUpdatedBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="LAST_UPDATED_DATE" property="lastUpdatedDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="DELETED" property="deleted" javaType="int" jdbcType="NUMERIC" />
+  </resultMap>
+
+	<insert id="insertParamItem" parameterType="map" useGeneratedKeys="true" keyProperty="pk_paramItemId">
+		INSERT INTO PARAM_ITEM_INFO
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+				PARAM_ITEM_ID,
+				PARAM_ID,
+			<if test="null != paramItemName and '' != paramItemName">
+				PARAM_ITEM_NAME,
+			</if>
+			<if test="null != paramItemValue and '' != paramItemValue">
+				PARAM_ITEM_VALUE,
+			</if>
+			<if test="null != paramItemOrder and 0 != paramItemOrder">
+				PARAM_ITEM_ORDER,
+			</if>
+				CREATED_BY,
+				CREATED_DATE,
+				LAST_UPDATED_BY,
+				LAST_UPDATED_DATE,
+				DELETED,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{paramItemId, jdbcType=NUMERIC},
+				#{paramId, jdbcType=NUMERIC},
+			<if test="null != paramItemName and '' != paramItemName">
+				#{paramItemName, jdbcType=VARCHAR},
+			</if>
+			<if test="null != paramItemValue and '' != paramItemValue">
+				#{paramItemValue, jdbcType=VARCHAR},
+			</if>
+			<if test="null != paramItemOrder and 0 != paramItemOrder">
+				#{paramItemOrder, jdbcType=NUMERIC},
+			</if>
+				TO_NUMBER(#{createdBy}),
+				TO_DATE(#{createdDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				TO_NUMBER(#{createdBy}),
+				TO_DATE(#{createdDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				0,
+		</trim>
+	</insert>
+
+	<delete id="deleteParamItemByParam" >
+		DELETE PARAM_ITEM_INFO a WHERE a.PARAM_ID IN (SELECT b.PARAM_ID FROM INTERFACE_PARAM b WHERE b.INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC})
+	</delete>
+
+</mapper>

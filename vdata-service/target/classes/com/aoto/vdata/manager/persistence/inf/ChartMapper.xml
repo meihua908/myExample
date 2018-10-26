@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aoto.vdata.manager.persistence.inf.ChartMapper">
+
+  <resultMap id="resultMap" type="map" >
+    <id column="CHART_ID" property="chartId" javaType="int" jdbcType="NUMERIC" />
+    <result column="CHART_NAME" property="chartName" javaType="String" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" javaType="String" jdbcType="NUMERIC" />
+    <result column="DELETED" property="deleted" javaType="int" jdbcType="NUMERIC" />
+    <result column="REMARK" property="remark" javaType="String" jdbcType="VARCHAR" />
+    <result column="BACK_IMG" property="backImg" javaType="String" jdbcType="VARCHAR" />
+    <result column="BACK_IMG_NAME" property="backImgName" javaType="String" jdbcType="VARCHAR" />
+    <result column="BACK_COLOR" property="backColor" javaType="String" jdbcType="VARCHAR" />
+    <result column="RESOLUTION" property="resolution" javaType="String" jdbcType="VARCHAR" />
+    <result column="PATH" property="path" javaType="String" jdbcType="VARCHAR" />
+    <result column="CREATED_BY" property="createdBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="CREATED_DATE" property="createdDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATED_BY" property="lastUpdatedBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="LAST_UPDATED_DATE" property="lastUpdatedDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="PUBLIC_DATE" property="publicDate" javaType="String" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+  <resultMap id="compMap" type="map" >
+    <id column="COMPONENT_ID" property="componentId" javaType="int" jdbcType="NUMERIC" />
+    <result column="COMPONENT_NAME" property="componentName" javaType="String" jdbcType="VARCHAR" />
+    <result column="COMPONENT_NO" property="componentNo" javaType="String" jdbcType="VARCHAR" />
+    <result column="COMPONENT_TYPE" property="componentType" javaType="String" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" javaType="String" jdbcType="VARCHAR" />
+    <result column="CREATED_DATE" property="createdDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="COMP_PATH" property="compPath" javaType="String" jdbcType="VARCHAR" />
+  </resultMap>
+  
+   <resultMap id="interfaceMap" type="map" >
+    <id column="INTERFACE_ID" property="interfaceId" javaType="int" jdbcType="NUMERIC" />
+    <result column="INTERFACE_NAME" property="interfaceName" javaType="String" jdbcType="VARCHAR" />
+    <result column="INTERFACE_NO" property="interfaceNo" javaType="String" jdbcType="VARCHAR" />
+    <result column="INTERFACE_WAY" property="interfaceWay" javaType="String" jdbcType="VARCHAR" />
+    <result column="INTERFACE_URL" property="interfaceUrl" javaType="String" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" javaType="String" jdbcType="VARCHAR" />
+    <result column="DELETED" property="deleted" javaType="int" jdbcType="NUMERIC" />
+  </resultMap>
+  
+  <resultMap id="paramItemMap" type="map" >
+    <id column="PARAM_ITEM_ID" property="paramItemId" javaType="int" jdbcType="NUMERIC" />
+    <result column="PARAM_ID" property="paramId" javaType="String" jdbcType="VARCHAR" />
+    <result column="PARAM_ITEM_NAME" property="paramItemName" javaType="String" jdbcType="VARCHAR" />
+    <result column="PARAM_ITEM_VALUE" property="paramItemValue" javaType="String" jdbcType="VARCHAR" />
+    <result column="PARAM_ITEM_ORDER" property="paramItemOrder" javaType="String" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <insert id="insertChartInfo" parameterType="map" useGeneratedKeys="true" keyProperty="pk_Id">
+  	INSERT INTO CHART_INFO(CHART_ID,CHART_NAME,STATUS,DELETED,CREATED_BY,CREATED_DATE,REMARK,BACK_IMG,BACK_IMG_NAME,BACK_COLOR,RESOLUTION,PATH,LAST_UPDATED_DATE) 
+		  VALUES(#{chartId,jdbcType=NUMERIC},#{chartName,jdbcType=VARCHAR},#{status,jdbcType=NUMERIC},#{deleted,jdbcType=NUMERIC},#{createdBy,jdbcType=NUMERIC},
+		         #{createdDate,jdbcType=TIMESTAMP},#{remark,jdbcType=VARCHAR},#{backImg,jdbcType=VARCHAR},#{backImgName,jdbcType=VARCHAR},
+			     #{backColor,jdbcType=VARCHAR},#{resolution,jdbcType=VARCHAR},#{path,jdbcType=VARCHAR},#{lastUpdatedDate,jdbcType=TIMESTAMP})
+  </insert>
+  
+  <insert id="saveChartComp" parameterType="map">
+  	INSERT INTO CHART_COMP(CHART_COMP_ID,CHART_ID,COMP_ID_NEW,INTERFACE_ID,X,Y,HEIGHT,WIDTH,PELLUCIDITY,REFRESH_TIME)
+  	   VALUES(#{chartCompId,jdbcType=NUMERIC},#{chartId,jdbcType=NUMERIC},#{compId,jdbcType=VARCHAR},#{interfaceId,jdbcType=NUMERIC},#{x,jdbcType=VARCHAR},
+  	          #{y,jdbcType=VARCHAR},#{height,jdbcType=VARCHAR},#{width,jdbcType=VARCHAR},#{opacity,jdbcType=VARCHAR},#{refreshTime,jdbcType=NUMERIC})
+  </insert>
+  
+  <insert id="saveCompParam" parameterType="map">
+  	INSERT INTO COMP_PARAM(CHART_PARAM_ID,COMP_ID_NEW,PARAM_ID,PARAM_VALUE)
+  	   VALUES(#{chartParamId,jdbcType=NUMERIC},#{compId,jdbcType=VARCHAR},#{paramId,jdbcType=NUMERIC},#{paramValue,jdbcType=VARCHAR})
+  </insert>
+  
+  <select id="getInterfacesByCompId" parameterType="map" resultMap="interfaceMap">
+  	select i.INTERFACE_ID,i.INTERFACE_NAME,i.INTERFACE_NO,i.INTERFACE_WAY,i.INTERFACE_URL,i.REMARK,i.DELETED
+  	from INTERFACE_COMP c,INTERFACE_INFO i 
+  	where c.interface_id = i.interface_id and c.component_id = #{compId,jdbcType=NUMERIC}
+  </select>
+  
+  <select id="getParamItemList" parameterType="map" resultMap="paramItemMap">
+  	select p.param_item_id,p.param_id,p.param_item_name,p.param_item_value,p.param_item_order from PARAM_ITEM_INFO p where p.param_id = #{paramId,jdbcType=NUMERIC} and p.deleted = 0
+  </select>
+
+	<select id="selectChartByPage" resultMap="resultMap" > 
+	 	SELECT o.CHART_ID, o.CHART_NAME, DECODE(o.STATUS, 0, '未发布', 1, '已发布') STATUS, o.DELETED, o.BACK_IMG, o.BACK_IMG_NAME, o.BACK_COLOR, o.RESOLUTION, o.REMARK, o.PATH, p.REAL_NAME AS CREATED_BY, o.CREATED_DATE, o.LAST_UPDATED_DATE
+	 	FROM CHART_INFO o
+	   	INNER JOIN SYS_USER p
+	   	ON o.CREATED_BY = p.USER_ID
+	   	WHERE o.DELETED = 0
+	   <if test="null != keyword and '' != keyword">
+	      AND (o.CHART_NAME || o.BACK_IMG_NAME) LIKE CONCAT(CONCAT('%', #{keyword, jdbcType=VARCHAR}), '%')
+	   </if>
+	   	GROUP BY o.CHART_ID, o.CHART_NAME, o.STATUS, o.DELETED, o.BACK_IMG, o.BACK_IMG_NAME, o.BACK_COLOR, o.RESOLUTION, o.REMARK, o.PATH, p.REAL_NAME, o.CREATED_DATE, o.LAST_UPDATED_DATE
+	    ORDER BY o.CREATED_DATE DESC
+	</select>
+	
+	<select id="getChartCompent" resultMap="compMap">
+		SELECT C.COMPONENT_ID, C.COMPONENT_NAME, C.COMPONENT_NO, C.COMPONENT_TYPE, C.REMARK, C.COMP_PATH, C.CREATED_DATE
+	 	FROM COMPONENT C
+	   	WHERE C.DELETED = 0 ORDER BY C.LAST_UPDATED_DATE DESC
+	</select>
+
+	<update id="updateChartDele" >
+		UPDATE CHART_INFO SET DELETED = 1, CREATED_BY = #{createdBy, jdbcType=NUMERIC}
+		WHERE CHART_ID = TO_NUMBER(#{chartId})
+	</update>
+
+	<update id="updateChartStatus" >
+		UPDATE CHART_INFO SET STATUS = 1, CREATED_BY = #{lastUpdatedBy, jdbcType=NUMERIC}, LAST_UPDATED_DATE = #{lastUpdatedDate,jdbcType=TIMESTAMP}
+		WHERE CHART_ID = TO_NUMBER(#{chartId})
+	</update>
+
+   	<select id="selectChartPath" resultType="string" >
+   		SELECT PATH FROM CHART_INFO WHERE DELETED = 0 AND CHART_ID = #{chartId, jdbcType=NUMERIC}
+    </select>
+    
+    <select id="getSynChartList" resultMap="resultMap">
+        SELECT C.CHART_ID,C.CHART_NAME,C.STATUS,C.REMARK,C.PATH,
+        to_char(C.LAST_UPDATED_DATE,'yyyymmddhh24miss') PUBLIC_DATE
+        FROM CHART_INFO C 
+        WHERE  C.DELETED = 0 AND C.STATUS = 1 AND C.LAST_UPDATED_DATE > to_timestamp(#{synchroTime},'yyyy-mm-dd hh24:mi:ss.ff9') 
+    </select>
+    
+    <select id="getChartInfoById" resultMap="resultMap">
+        SELECT * FROM CHART_INFO C WHERE C.CHART_ID = #{chartId, jdbcType=NUMERIC}
+    </select>
+
+</mapper>

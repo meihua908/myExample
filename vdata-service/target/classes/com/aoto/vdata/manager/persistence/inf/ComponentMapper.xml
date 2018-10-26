@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aoto.vdata.manager.persistence.inf.ComponentMapper">
+
+  <resultMap id="resultMap" type="map" >
+    <id column="COMPONENT_ID" property="componentId" javaType="int" jdbcType="NUMERIC" />
+    <result column="COMPONENT_NAME" property="componentName" javaType="String" jdbcType="VARCHAR" />
+    <result column="COMPONENT_NO" property="componentNo" javaType="String" jdbcType="VARCHAR" />
+    <result column="COMPONENT_TYPE" property="componentType" javaType="String" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" javaType="String" jdbcType="VARCHAR" />
+    <result column="CREATED_BY" property="createdBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="CREATED_DATE" property="createdDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATED_BY" property="lastUpdatedBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="LAST_UPDATED_DATE" property="lastUpdatedDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="DELETED" property="deleted" javaType="int" jdbcType="NUMERIC" />
+    <result column="COMP_PATH" property="compPath" javaType="String" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <select id="selectComponentByPage" resultMap="resultMap" > 
+ 	SELECT o.COMPONENT_ID, o.COMPONENT_NAME, o.COMPONENT_NO, o.COMPONENT_TYPE, o.REMARK, o.COMP_PATH, p.REAL_NAME AS CREATED_BY, o.CREATED_DATE
+ 	FROM COMPONENT o
+   	INNER JOIN SYS_USER p
+   	ON o.CREATED_BY = p.USER_ID
+   	WHERE o.DELETED = 0
+   <if test="null != keyword and '' != keyword">
+      AND (o.COMPONENT_NAME || o.COMPONENT_NO || o.COMPONENT_TYPE) LIKE CONCAT(CONCAT('%', #{keyword, jdbcType=VARCHAR}), '%')
+   </if>
+   	GROUP BY o.COMPONENT_ID, o.COMPONENT_NAME, o.COMPONENT_NO, o.COMPONENT_TYPE, o.REMARK, o.COMP_PATH, p.REAL_NAME, o.CREATED_DATE
+    ORDER BY o.CREATED_DATE DESC
+  </select>
+
+	<insert id="insertComponent" parameterType="map" useGeneratedKeys="true" keyProperty="pk_componentId">
+		INSERT INTO COMPONENT
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+				COMPONENT_ID,
+			<if test="null != componentName and '' != componentName">
+				COMPONENT_NAME,
+			</if>
+			<if test="null != componentNo and '' != componentNo">
+				COMPONENT_NO,
+			</if>
+			<if test="null != componentType and '' != componentType">
+				COMPONENT_TYPE,
+			</if>
+			<if test="null != remark and '' != remark">
+				REMARK,
+			</if>
+			<if test="null != compPath and '' != compPath">
+				COMP_PATH,
+			</if>
+				CREATED_BY,
+				CREATED_DATE,
+				LAST_UPDATED_BY,
+				LAST_UPDATED_DATE,
+				DELETED,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{componentId, jdbcType=NUMERIC},
+			<if test="null != componentName and '' != componentName">
+				#{componentName, jdbcType=VARCHAR},
+			</if>
+			<if test="null != componentNo and '' != componentNo">
+				#{componentNo, jdbcType=VARCHAR},
+			</if>
+			<if test="null != componentType and '' != componentType">
+				#{componentType, jdbcType=VARCHAR},
+			</if>
+			<if test="null != remark and '' != remark">
+				#{remark, jdbcType=VARCHAR},
+			</if>
+			<if test="null != compPath and '' != compPath">
+				#{compPath, jdbcType=VARCHAR},
+			</if>
+				TO_NUMBER(#{createdBy}),
+				TO_DATE(#{createdDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				TO_NUMBER(#{lastUpdatedBy}),
+				TO_DATE(#{lastUpdatedDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				0,
+		</trim>
+	</insert>
+
+	<select id="selectIdByNo" parameterType="string" resultType="string">
+		SELECT COMPONENT_ID FROM COMPONENT WHERE COMPONENT_NO = #{componentNo, jdbcType=VARCHAR} AND DELETED = 0
+	</select>
+
+	<select id="selectNoById" parameterType="int" resultType="string">
+		SELECT COMPONENT_NO FROM COMPONENT WHERE COMPONENT_ID = #{componentId, jdbcType=NUMERIC} AND DELETED = 0
+	</select>
+
+	<update id="updateComponent" parameterType="com.aoto.vdata.manager.model.ComponentModel" >
+		UPDATE COMPONENT
+		<set>
+				COMPONENT_NAME = #{componentName, jdbcType=VARCHAR},
+				COMPONENT_NO = #{componentNo, jdbcType=VARCHAR},
+				COMPONENT_TYPE = #{componentType, jdbcType=VARCHAR},
+				REMARK = #{remark, jdbcType=VARCHAR},
+				COMP_PATH = #{compPath, jdbcType=VARCHAR},
+				LAST_UPDATED_BY = TO_NUMBER(#{lastUpdatedBy}),
+				LAST_UPDATED_DATE = TO_DATE(#{lastUpdatedDate}, 'yyyy-mm-dd hh24:mi:ss'),
+		</set>
+		WHERE COMPONENT_ID = #{componentId, jdbcType=NUMERIC}
+	</update>
+
+	<update id="updateComponentStatus" >
+		UPDATE COMPONENT SET DELETED = 1, CREATED_BY = #{lastUpdatedBy, jdbcType=NUMERIC}, LAST_UPDATED_DATE = TO_DATE(#{lastUpdatedDate}, 'yyyy-mm-dd hh24:mi:ss')
+		WHERE COMPONENT_ID = TO_NUMBER(#{componentId})
+	</update>
+
+   	<select id="selectComponentPath" resultType="string" >
+   		SELECT COMP_PATH FROM COMPONENT WHERE DELETED = 0 AND COMPONENT_ID = #{componentId, jdbcType=NUMERIC}
+    </select>
+
+</mapper>

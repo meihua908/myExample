@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aoto.vdata.manager.persistence.inf.InterfaceMapper">
+
+  <resultMap id="resultMap" type="map" >
+    <id column="INTERFACE_ID" property="interfaceId" javaType="int" jdbcType="NUMERIC" />
+    <result column="INTERFACE_NAME" property="interfaceName" javaType="String" jdbcType="VARCHAR" />
+    <result column="INTERFACE_NO" property="interfaceNo" javaType="String" jdbcType="VARCHAR" />
+    <result column="INTERFACE_WAY" property="interfaceWay" javaType="String" jdbcType="VARCHAR" />
+    <result column="INTERFACE_URL" property="interfaceUrl" javaType="String" jdbcType="VARCHAR" />
+    <result column="REMARK" property="remark" javaType="String" jdbcType="VARCHAR" />
+    <result column="CREATED_BY" property="createdBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="CREATED_DATE" property="createdDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="LAST_UPDATED_BY" property="lastUpdatedBy" javaType="String" jdbcType="NUMERIC" />
+    <result column="LAST_UPDATED_DATE" property="lastUpdatedDate" javaType="String" jdbcType="TIMESTAMP" />
+    <result column="DELETED" property="deleted" javaType="int" jdbcType="NUMERIC" />
+    <result column="COMPONENT_NO" property="componentNo" javaType="String" jdbcType="VARCHAR" />
+  </resultMap>
+
+	<select id="selectInterfaceByPage" resultMap="resultMap" > 
+		SELECT o.INTERFACE_ID, o.INTERFACE_NO, o.INTERFACE_NAME, o.INTERFACE_WAY, o.INTERFACE_URL, z.COMPONENT_NO, o.REMARK, p.REAL_NAME AS CREATED_BY, o.CREATED_DATE
+			FROM INTERFACE_INFO o
+ 			INNER JOIN SYS_USER p
+ 			ON o.CREATED_BY = p.USER_ID
+ 			LEFT JOIN (	SELECT q.INTERFACE_ID, q.COMPONENT_ID, h.COMPONENT_NO 
+ 						FROM COMPONENT h 
+ 						INNER JOIN INTERFACE_COMP q
+                 		ON h.COMPONENT_ID = q.COMPONENT_ID
+              			WHERE h.DELETED = 0) z
+ 			ON o.INTERFACE_ID = z.INTERFACE_ID
+ 		WHERE o.DELETED = 0
+ 	<if test="null != keyword and '' != keyword">
+    	AND (o.INTERFACE_NAME || o.INTERFACE_NO) LIKE CONCAT(CONCAT('%', #{keyword, jdbcType=VARCHAR}), '%')
+ 	</if>
+		GROUP BY o.INTERFACE_ID, o.INTERFACE_NO, o.INTERFACE_NAME, o.INTERFACE_WAY, o.INTERFACE_URL, z.COMPONENT_NO, o.REMARK, p.REAL_NAME, o.CREATED_DATE
+		ORDER BY o.CREATED_DATE DESC
+	</select>
+
+	<select id="selectIdByNo" parameterType="string" resultType="string">
+		SELECT INTERFACE_ID FROM INTERFACE_INFO WHERE INTERFACE_NO = #{interfaceNo, jdbcType=VARCHAR} AND DELETED = 0
+	</select>
+	
+	<select id="getInterfaceById" parameterType="int" resultMap="resultMap">
+		SELECT INTERFACE_NAME,INTERFACE_NO,INTERFACE_WAY,INTERFACE_URL,REMARK,DELETED FROM INTERFACE_INFO WHERE INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC}
+	</select>
+
+	<insert id="insertInterface" parameterType="map" useGeneratedKeys="true" keyProperty="pk_interfaceId">
+		INSERT INTO INTERFACE_INFO
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+				INTERFACE_ID,
+			<if test="null != interfaceName and '' != interfaceName">
+				INTERFACE_NAME,
+			</if>
+			<if test="null != interfaceNo and '' != interfaceNo">
+				INTERFACE_NO,
+			</if>
+			<if test="null != interfaceWay and '' != interfaceWay">
+				INTERFACE_WAY,
+			</if>
+			<if test="null != interfaceUrl and '' != interfaceUrl">
+				INTERFACE_URL,
+			</if>
+			<if test="null != remark and '' != remark">
+				REMARK,
+			</if>
+				CREATED_BY,
+				CREATED_DATE,
+				LAST_UPDATED_BY,
+				LAST_UPDATED_DATE,
+				DELETED,
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+				#{interfaceId, jdbcType=NUMERIC},
+			<if test="null != interfaceName and '' != interfaceName">
+				#{interfaceName, jdbcType=VARCHAR},
+			</if>
+			<if test="null != interfaceNo and '' != interfaceNo">
+				#{interfaceNo, jdbcType=VARCHAR},
+			</if>
+			<if test="null != interfaceWay and '' != interfaceWay">
+				#{interfaceWay, jdbcType=VARCHAR},
+			</if>
+			<if test="null != interfaceUrl and '' != interfaceUrl">
+				#{interfaceUrl, jdbcType=VARCHAR},
+			</if>
+			<if test="null != remark and '' != remark">
+				#{remark, jdbcType=VARCHAR},
+			</if>
+				TO_NUMBER(#{createdBy}),
+				TO_DATE(#{createdDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				TO_NUMBER(#{createdBy}),
+				TO_DATE(#{createdDate}, 'yyyy-mm-dd hh24:mi:ss'),
+				0,
+		</trim>
+	</insert>
+	
+	<insert id="insertInterfaceComp" >
+		INSERT INTO INTERFACE_COMP (INTERFACE_COMP_ID, INTERFACE_ID, COMPONENT_ID) VALUES (SEQ_INTERFACE_COMP.NEXTVAL, #{interfaceId, jdbcType=NUMERIC}, #{componentId, jdbcType=NUMERIC})
+	</insert>
+
+	<update id="updateInterface" parameterType="com.aoto.vdata.manager.model.InterfaceModel" >
+		UPDATE INTERFACE_INFO
+		<set>
+				INTERFACE_NAME = #{interfaceName, jdbcType=VARCHAR},
+				INTERFACE_NO = #{interfaceNo, jdbcType=VARCHAR},
+				INTERFACE_WAY = #{interfaceWay, jdbcType=VARCHAR},
+				INTERFACE_URL = #{interfaceUrl, jdbcType=VARCHAR},
+				REMARK = #{remark, jdbcType=VARCHAR},
+				LAST_UPDATED_BY = TO_NUMBER(#{lastUpdatedBy}),
+				LAST_UPDATED_DATE = TO_DATE(#{lastUpdatedDate}, 'yyyy-mm-dd hh24:mi:ss'),
+		</set>
+		WHERE INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC}
+	</update>
+
+	<update id="updateInterfaceStatus" >
+		UPDATE INTERFACE_INFO SET DELETED = 1, CREATED_BY = #{createdBy, jdbcType=NUMERIC}
+		WHERE INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC}
+	</update>
+	
+	<delete id="deleteInterfaceComp">
+		DELETE INTERFACE_COMP WHERE INTERFACE_ID = #{interfaceId, jdbcType=NUMERIC}
+	</delete>
+
+</mapper>
